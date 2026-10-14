@@ -6,4 +6,8 @@ L'objectif de ce TP est de découvrir la virtualisation à l'aide du logiciel Or
 
 **Environnement de travail Ordinateur**
 
-hôte : PC Logiciel de virtualisation : Oracle VirtualBox Système d'exploitation invité : Ubuntu Server Image téléchargée : fichier ISO d'Ubuntu Server
+hôte : PC.
+
+Logiciel de virtualisation : Oracle VirtualBox 
+
+Système d'exploitation invité : Ubuntu Server Image téléchargée : fichier ISO d'Ubuntu Server
