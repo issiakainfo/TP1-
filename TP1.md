@@ -1,7 +1,8 @@
 **Partie1: Preparer et installer VirtualBox**
 
 1/ la virtualisation est bien activée quand je tape ctrl+maj+echap
-![virtualisation](capture d'écran 2026-13-165749.png)
+![virtualisation](Capture d'écran 2026-10-13 165749)
+
 
 2/ bcdedit/enum | finstr hypervisorlaunchtype : On obtient hypervisorlaunchtype auto
 
