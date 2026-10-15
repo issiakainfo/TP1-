@@ -1,30 +1,14 @@
-# TP 1 — Installation de VirtualBox et création d'une VM Ubuntu
-
-**Cours :** Introduction au Cloud · L3 SI RIST & BDGL
-**Binôme :** `<Nom 1>` / `<Nom 2>`
-**Date :** `<jj/mm/aaaa>`
-
-> Les éléments entre `<...>` sont des mesures personnelles (versions, adresses, durées, captures) à remplacer par vos propres résultats.
-
----
 
 ## Partie 1 — Préparer l'hôte et installer VirtualBox
 
 ### Commandes lancées
 
 ```powershell
-bcdedit /enum | findstr hypervisorlaunchtype
+bcdedit /enum | findstr hypervisorlaunchtype | hypervisorkaunchtype auto
 systeminfo | findstr /C:"Hyper-V"
 $env:Path += ";C:\Program Files\Oracle\VirtualBox"
 VBoxManage --version
 VBoxManage list hostinfo
-```
-
-### Sorties
-
-```text
-<coller ici la sortie de VBoxManage --version et VBoxManage list hostinfo>
-```
 
 ![Virtualisation activée dans le Gestionnaire des tâches](captures/p1-virtualisation.png)
 
