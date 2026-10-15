@@ -5,9 +5,9 @@
 
 ```powershell
 bcdedit /enum | findstr hypervisorlaunchtype | hypervisorkaunchtype auto
-systeminfo | findstr /C:"Hyper-V"
+systeminfo | findstr /C:"Hyper-V"|
 $env:Path += ";C:\Program Files\Oracle\VirtualBox"
-VBoxManage --version
+VBoxManage --version | 7.2.6r172322
 VBoxManage list hostinfo
 
 ![Virtualisation activée dans le Gestionnaire des tâches](captures/p1-virtualisation.png)
