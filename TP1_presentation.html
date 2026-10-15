@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TP1 - Virtualisation et Ubuntu Server</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --primary: #38bdf8;
+      --accent: #a78bfa;
+      --text: #e5e7eb;
+      --muted: #cbd5e1;
+      --ok: #34d399;
+      --line: rgba(255,255,255,0.08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: linear-gradient(135deg, #020817, #111827 35%, #0f172a);
+      color: var(--text);
+    }
+    .deck {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+    }
+    .slide {
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 34px 38px 24px;
+      margin: 0 auto 22px;
+      min-height: 670px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+    .slide::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+    }
+    h1, h2, h3 { margin: 0 0 18px; }
+    h1 {
+      font-size: 42px;
+      line-height: 1.1;
+      color: var(--primary);
+    }
+    h2 {
+      font-size: 30px;
+      color: #f8fafc;
+    }
+    h3 {
+      font-size: 22px;
+      color: var(--muted);
+    }
+    p, li {
+      font-size: 21px;
+      line-height: 1.5;
+      color: var(--text);
+    }
+    ul {
+      margin: 16px 0 0 24px;
+      padding-left: 16px;
+    }
+    li { margin-bottom: 10px; }
+    .small { font-size: 18px; }
+    .badge {
+      display: inline-block;
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--primary);
+      border-radius: 999px;
+      padding: 8px 14px;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 28px;
+      align-items: start;
+    }
+    .card {
+      background: rgba(17,24,39,0.9);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 18px 20px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      font-size: 18px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 12px 14px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: rgba(56,189,248,0.08); color: #e0f2fe; }
+    strong { color: #f8fafc; }
+    .footer {
+      position: absolute;
+      right: 28px;
+      bottom: 18px;
+      font-size: 14px;
+      color: var(--muted);
+      opacity: 0.9;
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+
+    <section class="slide">
+      <div class="badge">TP1 - Virtualisation</div>
+      <h1>Préparer un hôte, installer Ubuntu Server dans une machine virtuelle et sécuriser l'accès SSH</h1>
+      <p class="small">Présentation réalisée à partir du fichier TP1.md</p>
+      <p>Objectif : reproduire le fonctionnement d'un environnement IaaS en local, avec VirtualBox, Ubuntu Server, réseau NAT, SSH et instantanés.</p>
+      <div class="footer">TP1 - 2026</div>
+    </section>
+
+    <section class="slide">
+      <h2>1. Hyperviseur : type 1 ou type 2 ?</h2>
+      <div class="grid">
+        <div>
+          <ul>
+            <li><strong>Type 1</strong> : bare-metal, directement sur le matériel. Exemples : Xen, KVM, Hyper-V.</li>
+            <li><strong>Type 2</strong> : installé comme logiciel sur un OS hôte. Exemples : VirtualBox, VMware Workstation.</li>
+            <li><strong>VirtualBox</strong> est un hyperviseur de type 2.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Pourquoi c'est important ?</h3>
+          <p>Le type d'hyperviseur influence la performance, la gestion du matériel et les cas d'usage (poste de travail vs cloud).</p>
+        </div>
+      </div>
+      <div class="footer">Hyperviseurs</div>
+    </section>
+
+    <section class="slide">
+      <h2>2. Pourquoi la virtualisation matérielle est indispensable ?</h2>
+      <ul>
+        <li>VT-x (Intel) et AMD-V (AMD) ajoutent au processeur des modes de virtualisation.</li>
+        <li>Ils permettent à une VM de s'exécuter avec un cloisonnement matériel, sans dépendre d'un système d'exploitation hôte pour gérer chaque instruction.</li>
+        <li>Sans cette prise en charge, une VM 64 bits ne peut pas démarrer correctement.</li>
+        <li>La virtualisation matérielle est donc nécessaire pour faire fonctionner un système invité en sécurité et avec de bonnes performances.</li>
+      </ul>
+      <div class="footer">CPU & VM</div>
+    </section>
+
+    <section class="slide">
+      <h2>3. VirtualBox installé et ressources de l'hôte</h2>
+      <table>
+        <tr>
+          <th>Élément</th>
+          <th>Valeur</th>
+        </tr>
+        <tr>
+          <td>Version VirtualBox</td>
+          <td>7.2.6r172322</td>
+        </tr>
+        <tr>
+          <td>Cœurs détectés</td>
+          <td>4</td>
+        </tr>
+        <tr>
+          <td>RAM de l'hôte</td>
+          <td>312 Mo</td>
+        </tr>
+      </table>
+      <p>Ces informations montrent que la VM doit être dimensionnée avec des ressources modestes, sans surcharger l'hôte.</p>
+      <div class="footer">Outils et hôte</div>
+    </section>
+
+    <section class="slide">
+      <h2>4. Vérifier l'image ISO Ubuntu</h2>
+      <ul>
+        <li>Le téléchargement d'une ISO ne suffit pas : il faut vérifier son intégrité.</li>
+        <li>SHA-256 est une empreinte cryptographique du fichier.</li>
+        <li>La moindre modification de contenu produit une empreinte différente.</li>
+        <li>La vérification protège contre les fichiers corrompus ou altérés.</li>
+        <li>Idéalement, le fichier SHA256SUMS doit être récupéré depuis une source officielle et vérifié avec GPG.</li>
+      </ul>
+      <div class="footer">Intégrité</div>
+    </section>
+
+    <section class="slide">
+      <h2>5. Ubuntu Desktop vs Ubuntu Server</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Ubuntu Desktop</h3>
+          <ul>
+            <li>Interface graphique</li>
+            <li>Applications bureautiques</li>
+            <li>Destiné à un poste de travail</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Ubuntu Server</h3>
+          <ul>
+            <li>Pas d'interface graphique</li>
+            <li>Administration en ligne de commande</li>
+            <li>Moins de ressources, plus sécuritaire</li>
+          </ul>
+        </div>
+      </div>
+      <p>Pour un serveur cloud, Ubuntu Server est le meilleur choix : il consomme moins, expose moins de services et est plus facile à administrer à distance via SSH.</p>
+      <div class="footer">Choix du système</div>
+    </section>
+
+    <section class="slide">
+      <h2>6. LTS : qu'est-ce que cela veut dire ?</h2>
+      <ul>
+        <li><strong>LTS</strong> = Long Term Support.</li>
+        <li>Une version LTS reçoit des mises à jour de sécurité pendant plusieurs années.</li>
+        <li>Ubuntu propose souvent 5 ans de support standard, puis des extensions via Ubuntu Pro.</li>
+        <li>Le choix d'une version LTS est généralement le plus stable et le plus sûr pour un environnement de production.</li>
+      </ul>
+      <div class="footer">Versions supportées</div>
+    </section>
+
+    <section class="slide">
+      <h2>7. Paramètres de la machine virtuelle</h2>
+      <table>
+        <tr>
+          <th>Paramètre</th>
+          <th>Valeur</th>
+        </tr>
+        <tr><td>Nom</td><td>ubuntu-srv</td></tr>
+        <tr><td>Type / version</td><td>Linux / Ubuntu (64-bit)</td></tr>
+        <tr><td>Mémoire</td><td>2048 Mo</td></tr>
+        <tr><td>Processeurs</td><td>2</td></tr>
+        <tr><td>Disque</td><td>VDI, 25 Go, alloué dynamiquement</td></tr>
+        <tr><td>Réseau</td><td>NAT</td></tr>
+        <tr><td>Redirection</td><td>ssh, TCP, 127.0.0.1:2222 → invité:22</td></tr>
+      </table>
+      <div class="footer">VM</div>
+    </section>
+
+    <section class="slide">
+      <h2>8. Disque dynamique vs taille fixe</h2>
+      <ul>
+        <li><strong>Disque dynamique</strong> : l'espace utilisé augmente au fur et à mesure, jusqu'à la taille maximale.</li>
+        <li><strong>Disque fixe</strong> : toute la capacité est réservée d'avance.</li>
+        <li>Le disque dynamique est souvent préférable pour économiser l'espace disque de l'hôte.</li>
+        <li>À la création, le fichier .vdi est petit et grossit progressivement.</li>
+      </ul>
+      <div class="footer">Stockage</div>
+    </section>
+
+    <section class="slide">
+      <h2>9. Pourquoi désactiver l'installation sans surveillance ?</h2>
+      <ul>
+        <li>L'installation sans surveillance applique automatiquement des paramètres par défaut.</li>
+        <li>Elle masque les étapes de configuration et limite le contrôle du système.</li>
+        <li>Dans ce TP, on veut maîtriser le nom d'utilisateur, les options réseau et le paramétrage du serveur.</li>
+        <li>Le résultat est un environnement plus explicite et plus conforme au besoin.</li>
+      </ul>
+      <div class="footer">Configuration manuelle</div>
+    </section>
+
+    <section class="slide">
+      <h2>10. NAT et redirection de port</h2>
+      <ul>
+        <li>En mode NAT, la VM est dans un réseau privé virtuel derrière un routeur de VirtualBox.</li>
+        <li>Elle n'est pas directement joignable depuis l'hôte via son adresse interne.</li>
+        <li>La redirection 127.0.0.1:2222 → VM:22 permet d'accéder au service SSH de la VM depuis l'hôte.</li>
+        <li>C'est l'équivalent d'un point d'entrée contrôlé dans un réseau privé d'un cloud.</li>
+      </ul>
+      <div class="footer">Réseau</div>
+    </section>
+
+    <section class="slide">
+      <h2>11. Installation Ubuntu Server</h2>
+      <table>
+        <tr>
+          <th>Écran</th>
+          <th>Choix</th>
+        </tr>
+        <tr><td>Langue</td><td>Français</td></tr>
+        <tr><td>Clavier</td><td>French (AZERTY)</td></tr>
+        <tr><td>Installation</td><td>Ubuntu Server (non minimisée)</td></tr>
+        <tr><td>Réseau</td><td>enp0s3, DHCPv4</td></tr>
+        <tr><td>Stockage</td><td>Disque entier avec LVM</td></tr>
+        <tr><td>SSH</td><td>OpenSSH installé</td></tr>
+      </table>
+      <p>La machine a obtenu une adresse DHCP 10.0.2.15/24, via le DHCP intégré au moteur NAT de VirtualBox.</p>
+      <div class="footer">Installateur</div>
+    </section>
+
+    <section class="slide">
+      <h2>12. Pourquoi OpenSSH est installé dès le début ?</h2>
+      <ul>
+        <li>Un serveur ne possède ni clavier ni écran physiques en production.</li>
+        <li>SSH permet l'administration à distance, sécurisée et chiffrée.</li>
+        <li>Sans SSH, il serait impossible de gérer correctement une VM ou un serveur cloud.</li>
+        <li>Il faut aussi copier des fichiers, automatiser les tâches et surveiller le système.</li>
+      </ul>
+      <div class="footer">Administration distante</div>
+    </section>
+
+    <section class="slide">
+      <h2>13. Premiers pas réseau et SSH</h2>
+      <table>
+        <tr>
+          <th>Élément</th>
+          <th>Valeur</th>
+        </tr>
+        <tr><td>Adresse IP</td><td>10.0.2.15</td></tr>
+        <tr><td>Masque</td><td>255.255.255.0</td></tr>
+        <tr><td>Passerelle</td><td>10.0.2.2</td></tr>
+        <tr><td>DNS</td><td>10.0.2.3</td></tr>
+      </table>
+      <p>La passerelle 10.0.2.2 correspond au routeur virtuel de VirtualBox, qui fait transiter le trafic de la VM vers l'extérieur.</p>
+      <div class="footer">Réseau</div>
+    </section>
+
+    <section class="slide">
+      <h2>14. Pourquoi utiliser 127.0.0.1:2222 ?</h2>
+      <ul>
+        <li>10.0.2.15 est une adresse interne au réseau NAT de VirtualBox.</li>
+        <li>L'hôte n'a pas de route directe vers cette adresse privée.</li>
+        <li>La redirection de port de l'hôte permet d'accéder à la VM via localhost : 127.0.0.1:2222.</li>
+        <li>C'est une méthode courante pour administrer une VM depuis le système hôte de manière simple et sécurisée.</li>
+      </ul>
+      <div class="footer">Accès SSH</div>
+    </section>
+
+    <section class="slide">
+      <h2>15. Avantages de l'authentification par clé</h2>
+      <ul>
+        <li>Pas de mot de passe transmis sur le réseau.</li>
+        <li>Une clé SSH est très difficile à deviner et plus fiable qu'un mot de passe faible.</li>
+        <li>Elle facilite les automatisations et les déploiements sans intervention manuelle.</li>
+        <li>Les fournisseurs cloud l'utilisent massivement car les ports SSH sont systématiquement exposés à des attaques automatisées.</li>
+      </ul>
+      <div class="footer">Sécurité</div>
+    </section>
+
+    <section class="slide">
+      <h2>16. Snapshot, clone et arrêt propre</h2>
+      <ul>
+        <li><strong>Instantané</strong> : état figé d'une VM ; possibilité de revenir en arrière.</li>
+        <li><strong>Clone</strong> : copie indépendante de la VM avec son propre disque et sa propre configuration.</li>
+        <li><strong>acpipowerbutton</strong> simule un arrêt propre, en envoyant un signal ACPI à l'invité.</li>
+        <li><strong>poweroff</strong> coupe immédiatement l'alimentation, ce qui peut entraîner des corruptions.</li>
+      </ul>
+      <div class="footer">Snapshot & clone</div>
+    </section>
+
+    <section class="slide">
+      <h2>17. Pourquoi démarrer en mode headless ?</h2>
+      <ul>
+        <li>Le mode headless lance la VM sans fenêtre graphique.</li>
+        <li>On économise des ressources de l'hôte.</li>
+        <li>On administre la machine via SSH uniquement.</li>
+        <li>C'est le modèle le plus proche d'une instance cloud : le service est accessible et exploitable sans console locale.</li>
+      </ul>
+      <div class="footer">Administration</div>
+    </section>
+
+    <section class="slide">
+      <h2>18. Conclusion</h2>
+      <ul>
+        <li>Ce TP a permis de reproduire de manière simple le fonctionnement d'un environnement cloud local.</li>
+        <li>On a vu : installation d'un hyperviseur, création d'une VM, configuration réseau, SSH, snapshots et clones.</li>
+        <li>C'est un premier pas concret vers l'infrastructure virtuelle et la gestion d'un serveur Linux.</li>
+      </ul>
+      <p><strong>Point clé :</strong> VirtualBox, Ubuntu Server et SSH sont les briques fondamentales d'un environnement de serveurs modernes.</p>
+      <div class="footer">Fin</div>
+    </section>
+
+  </div>
+</body>
+</html>
