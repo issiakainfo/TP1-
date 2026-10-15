@@ -46,9 +46,9 @@ Select-String -Path .\SHA256SUMS -Pattern "live-server-amd64"
 ### Sorties
 
 ```text
-Empreinte calculée : <hash SHA256 calculé>
-Ligne SHA256SUMS   : <hash lu dans SHA256SUMS>
-Taille de l'ISO    : <ex. 2,x Go>
+Empreinte calculée : <voir capture calculé>
+Ligne SHA256SUMS   : <Voir capture SHA256SUMS>
+Taille de l'ISO    : < 2,7 Go>
 ```
 
 ### Réponses
@@ -88,21 +88,6 @@ Taille de l'ISO    : <ex. 2,x Go>
 | Redirection de port | ssh, TCP, 127.0.0.1:2222 → invité :22 |
 
 ![Règle de redirection de port](captures/p3-redirection.png)
-
-### Variante en ligne de commande (bonus)
-
-```powershell
-$vm  = "ubuntu-srv"
-$dir = "$HOME\VirtualBox VMs\$vm"
-$iso = "$HOME\Downloads\ubuntu-26.04-live-server-amd64.iso"
-VBoxManage createvm --name $vm --ostype Ubuntu_64 --register
-VBoxManage modifyvm $vm --cpus 2 --memory 2048 --vram 16 --nic1 nat --natpf1 "ssh,tcp,127.0.0.1,2222,,22"
-VBoxManage createmedium disk --filename "$dir\$vm.vdi" --size 25600 --format VDI
-VBoxManage storagectl $vm --name SATA --add sata --controller IntelAhci
-VBoxManage storageattach $vm --storagectl SATA --port 0 --device 0 --type hdd --medium "$dir\$vm.vdi"
-VBoxManage storageattach $vm --storagectl SATA --port 1 --device 0 --type dvddrive --medium $iso
-VBoxManage showvminfo $vm
-```
 
 ### Réponses
 
@@ -148,12 +133,12 @@ L'installation sans surveillance applique automatiquement des choix par défaut 
 
 **1. Durée de l'installation ? Comparaison avec une instance cloud.**
 
-- Durée mesurée : `<ex. 12 minutes>`.
+- Durée mesurée : 47 minutes 
 - Une instance cloud (EC2, Azure VM) se crée à partir d'une **image déjà installée** (AMI, image Marketplace) : l'installation du système n'a pas lieu, la machine démarre en quelques dizaines de secondes à une ou deux minutes, et sa configuration (utilisateur, clé SSH) est injectée automatiquement (cloud-init). Le cloud supprime donc l'installation manuelle, ce que ce TP fait refaire à la main.
 
 **2. Adresse IP obtenue sur enp0s3, et qui l'a attribuée ?**
 
-- Adresse obtenue : `<ex. 10.0.2.15/24>`.
+- Adresse obtenue : 10.0.2.15/24.
 - Elle est attribuée en DHCP par le **serveur DHCP intégré à VirtualBox** (le moteur NAT), qui joue le rôle de routeur virtuel du réseau 10.0.2.0/24.
 
 **3. Pourquoi installer OpenSSH dès l'installation ? Que se passerait-il sans SSH sur un serveur cloud ?**
@@ -186,9 +171,6 @@ sudo ss -tlnp | grep :22
 
 ### Sorties
 
-```text
-<coller ici les sorties principales : lsb_release, ip -4 addr show, ip route, resolvectl, ping, ss>
-```
 
 ### Commandes lancées depuis l'hôte (PowerShell)
 
@@ -201,14 +183,6 @@ ssh -p 2222 etudiant@127.0.0.1 "cat ~/bonjour.txt"
 
 ```text
 <coller ici la sortie de la dernière commande>
-```
-
-### Bonus — connexion par clé
-
-```powershell
-ssh-keygen -t ed25519
-type $env:USERPROFILE\.ssh\id_ed25519.pub | ssh -p 2222 etudiant@127.0.0.1 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
-ssh -p 2222 etudiant@127.0.0.1
 ```
 
 ### Réponses
@@ -313,10 +287,4 @@ Le mode *headless* démarre la VM sans fenêtre graphique : on économise des re
 
 ## Conclusion
 
-Ce TP m'a permis de reproduire à petite échelle ce qu'automatise un fournisseur IaaS : un hyperviseur (VirtualBox), une machine virtuelle créée et configurée, un réseau privé accessible par redirection de port, un accès SSH et la gestion d'instantanés et de clones. `<ajouter ici une ou deux phrases personnelles : difficultés rencontrées, solutions trouvées>`
-
-## Sources
-
-- Énoncé du TP 1 — Introduction au Cloud, L3 SI RIST & BDGL
-- Documentation VirtualBox : <https://www.virtualbox.org/manual/>
-- Notes de version Ubuntu 26.04 LTS : <https://documentation.ubuntu.com/release-notes/26.04/>
+Ce TP m'a permis de reproduire à petite échelle ce qu'automatise un fournisseur IaaS : un hyperviseur (VirtualBox), une machine virtuelle créée et configurée, un réseau privé accessible par redirection de port, un accès SSH et la gestion d'instantanés et de clones.
