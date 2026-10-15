@@ -25,9 +25,9 @@ VT-x (Intel) et AMD-V (AMD) ajoutent au processeur des modes d'exécution dédi�
 
 **3. Version de VirtualBox et ressources de l'hôte**
 
-- Version installée : `<ex. 7.2.x>`
-- Cœurs détectés par `VBoxManage list hostinfo` : `<n>`
-- RAM de l'hôte : `<n> Mo`
+- Version installée : `<7.2.6r172322>`
+- Cœurs détectés par `VBoxManage list hostinfo` : 4
+- RAM de l'hôte : `312 Mo`
 
 ---
 
@@ -163,7 +163,7 @@ systemctl status ssh --no-pager
 sudo ss -tlnp | grep :22
 ```
 
-### Sorties
+
 
 ### Commandes lancées depuis l'hôte (PowerShell)
 
@@ -184,10 +184,10 @@ ssh -p 2222 etudiant@127.0.0.1 "cat ~/bonjour.txt"
 
 | Élément | Valeur |
 | --- | --- |
-| Adresse IP | `<ex. 10.0.2.15>` |
-| Masque | `<ex. /24 soit 255.255.255.0>` |
-| Passerelle | `<ex. 10.0.2.2>` |
-| Serveur DNS | `<ex. 10.0.2.3>` |
+| Adresse IP |  10.0.2.15 |
+| Masque |  255.255.255.0 |
+| Passerelle |  10.0.2.2 |
+| Serveur DNS | 10.0.2.3 |
 
 L'adresse **10.0.2.2** est la passerelle par défaut : c'est le **routeur virtuel de VirtualBox** (le moteur NAT). Il fait passer le trafic de la VM vers l'extérieur en traduisant ses adresses, [...]
 
@@ -246,7 +246,6 @@ VBoxManage unregistervm ubuntu-clone --delete
 
 ```text
 Après restauration (which htop; ls ~) : <sortie : htop et avant-restauration.txt ont disparu>
-Espace occupé : ubuntu-srv = <x,xx Go> ; ubuntu-clone = <x,xx Go>
 ```
 
 ### Réponses
@@ -280,4 +279,4 @@ Le mode *headless* démarre la VM sans fenêtre graphique : on économise des re
 
 ## Conclusion
 
-Ce TP m'a permis de reproduire à petite échelle ce qu'automatise un fournisseur IaaS : un hyperviseur (VirtualBox), une machine virtuelle créée et configurée, un réseau privé accessible pa[...]
+Ce TP m'a permis de reproduire à petite échelle ce qu'automatise un fournisseur IaaS : un hyperviseur (VirtualBox), une machine virtuelle créée et configurée, un réseau privé accessible.
